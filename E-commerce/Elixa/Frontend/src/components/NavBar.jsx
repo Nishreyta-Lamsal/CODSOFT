@@ -124,15 +124,11 @@ const NavBar = () => {
                   className="flex items-center space-x-2 focus:outline-none"
                 >
                   <img
-                    src={profileimg}
+                    src={user?.profilePicture || profileimg}
                     alt="User Profile"
                     className="w-7 h-7 rounded-full object-cover border-2 border-white"
                     onError={(e) => {
-                      console.error(
-                        "Failed to load profile image:",
-                        profileimg
-                      );
-                      e.target.style.display = "none";
+                      e.target.src = profileimg;
                     }}
                   />
                 </button>

@@ -384,9 +384,6 @@ const ProductDetails = () => {
                 >
                   {isAddingToCart ? "Adding..." : "Add to Cart"}
                 </button>
-                <button className="px-6 py-3 border border-[#4B3832] text-[#4B3832] rounded hover:bg-[#4B3832] hover:text-white transition flex-1">
-                  Wishlist
-                </button>
               </div>
             </div>
           </div>

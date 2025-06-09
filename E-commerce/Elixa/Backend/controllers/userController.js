@@ -274,4 +274,127 @@ const loginUser = async (req, res) => {
   }
 };
 
-export {registerUser, verifyEmail, loginUser };
+const getUserProfile = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.json({ success: false, message: "No token provided" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.userId;
+
+    const user = await userModel
+      .findById(userId)
+      .select("-password -verificationToken -resetPasswordToken -resetPasswordExpires");
+
+    if (!user) {
+      return res.json({ success: false, message: "User not found" });
+    }
+
+    return res.json({
+      success: true,
+      message: "User profile fetched successfully",
+      user: {
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        address: user.address,
+        gender: user.gender,
+        dob: user.dob,
+        phone: user.phone,
+        isVerified: user.isVerified,
+      },
+    });
+  } catch (error) {
+    return res.json({
+      success: false,
+      message: "Error fetching user profile: " + error.message,
+    });
+  }
+};
+
+const updateUserProfile = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.json({ success: false, message: "No token provided" });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.userId;
+
+    const { name, address, gender, dob, phone } = req.body;
+
+    if (!name) {
+      return res.json({
+        success: false,
+        message: "Name is required",
+      });
+    }
+
+    if (
+      phone &&
+      !validator.isMobilePhone(phone, "any", { strictMode: false })
+    ) {
+      return res.json({
+        success: false,
+        message: "Enter a valid phone number",
+      });
+    }
+
+    if (
+      dob &&
+      !validator.isDate(dob, { format: "YYYY-MM-DD", strictMode: true })
+    ) {
+      return res.json({
+        success: false,
+        message: "Enter a valid date of birth (YYYY-MM-DD)",
+      });
+    }
+
+    const updateData = {
+      name,
+      address: address ? JSON.parse(address) : { line1: "", line2: "" }, 
+      gender: gender || "Not Selected",
+      dob: dob || "Not Selected",
+      phone: phone || "0000000000",
+    };
+
+    if (req.file) {
+      updateData.image = req.file.path; 
+    }
+
+    const updatedUser = await userModel
+      .findByIdAndUpdate(userId, updateData, { new: true, runValidators: true })
+      .select(
+        "-password -verificationToken -resetPasswordToken -resetPasswordExpires"
+      );
+
+    if (!updatedUser) {
+      return res.json({ success: false, message: "User not found" });
+    }
+
+    return res.json({
+      success: true,
+      message: "Profile updated successfully",
+      user: {
+        name: updatedUser.name,
+        email: updatedUser.email,
+        image: updatedUser.image,
+        address: updatedUser.address,
+        gender: updatedUser.gender,
+        dob: updatedUser.dob,
+        phone: updatedUser.phone,
+        isVerified: updatedUser.isVerified,
+      },
+    });
+  } catch (error) {
+    return res.json({
+      success: false,
+      message: "Error updating user profile: " + error.message,
+    });
+  }
+};
+
+export {registerUser, verifyEmail, loginUser, updateUserProfile, getUserProfile };
