@@ -1,15 +1,102 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Link } from "react-router-dom";
+import { useContext } from "react";
+import { AppContext } from "../context/AppContext";
 
 const ContactUs = () => {
+  const { backendUrl } = useContext(AppContext);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    // Basic frontend validation
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.subject ||
+      !formData.message
+    ) {
+      toast.error("All fields are required", {
+        autoClose: 3000,
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (
+      !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)
+    ) {
+      toast.error("Invalid email address", {
+        autoClose: 3000,
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (
+      ![
+        "Product Inquiry",
+        "Order Support",
+        "Collaboration",
+        "Other",
+      ].includes(formData.subject)
+    ) {
+      toast.error("Please select a valid subject", {
+        autoClose: 3000,
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${backendUrl}/api/user/contact`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(data.message, {
+          autoClose: 3000,
+        });
+        setFormData({ name: "", email: "", subject: "", message: "" });
+      } else {
+        toast.error(data.message || "Failed to submit message", {
+          autoClose: 3000,
+        });
+      }
+    } catch (error) {
+      toast.error("Server error, please try again later", {
+        autoClose: 3000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="bg-[#F8F5F2]">
       <div className="relative h-16 overflow-hidden bg-[#745d46]"></div>
 
-      {/* Contact Form Section */}
       <div className="py-24 px-6 bg-white relative overflow-hidden">
         <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-16">
           <motion.div
@@ -114,7 +201,7 @@ const ContactUs = () => {
             viewport={{ once: true }}
             className="bg-white p-8 rounded-lg shadow-lg border border-gray-100"
           >
-            <form className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label
                   htmlFor="name"
@@ -125,8 +212,11 @@ const ContactUs = () => {
                 <input
                   type="text"
                   id="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-none focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none transition"
                   placeholder="Enter your name"
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
@@ -139,8 +229,11 @@ const ContactUs = () => {
                 <input
                   type="email"
                   id="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-none focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none transition"
                   placeholder="Enter your email"
+                  disabled={isSubmitting}
                 />
               </div>
               <div>
@@ -152,14 +245,16 @@ const ContactUs = () => {
                 </label>
                 <select
                   id="subject"
+                  value={formData.subject}
+                  onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-none focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none transition"
+                  disabled={isSubmitting}
                 >
-                  <option>Select a subject</option>
-                  <option>Product Inquiry</option>
-                  <option>Order Support</option>
-                  <option>Collaboration</option>
-                  <option>Press</option>
-                  <option>Other</option>
+                  <option value="">Select a subject</option>
+                  <option value="Product Inquiry">Product Inquiry</option>
+                  <option value="Order Support">Order Support</option>
+                  <option value="Collaboration">Collaboration</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
               <div>
@@ -172,16 +267,22 @@ const ContactUs = () => {
                 <textarea
                   id="message"
                   rows="4"
+                  value={formData.message}
+                  onChange={handleInputChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-none focus:ring-2 focus:ring-[#D4AF37] focus:border-[#D4AF37] outline-none transition"
                   placeholder="Your message here..."
+                  disabled={isSubmitting}
                 ></textarea>
               </div>
               <div className="flex justify-center items-center">
                 <button
                   type="submit"
-                  className="px-6 py-3 border border-[#4B3832] rounded bg-[#4B3832] hover:bg-[#342622] text-white text-center transition duration-300 transform hover:scale-105"
+                  className={`px-6 py-3 border border-[#4B3832] rounded bg-[#4B3832] hover:bg-[#342622] text-white text-center transition duration-300 transform hover:scale-105 ${
+                    isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  disabled={isSubmitting}
                 >
-                  Send Message
+                  {isSubmitting ? "Sending..." : "Send Message"}
                 </button>
               </div>
             </form>
@@ -189,7 +290,7 @@ const ContactUs = () => {
         </div>
       </div>
 
-      <ToastContainer position="bottom-right" />
+      <ToastContainer position="top-right" />
     </div>
   );
 };
