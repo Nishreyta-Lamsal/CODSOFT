@@ -50,7 +50,7 @@ const ContactUs = () => {
                   <h3 className="font-serif text-lg text-[#4B3832]">
                     Email Us
                   </h3>
-                  <p className="text-gray-600">hello@elixa.com</p>
+                  <p className="text-gray-600"> support@elixa.com</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
@@ -72,7 +72,7 @@ const ContactUs = () => {
                 </div>
                 <div>
                   <h3 className="font-serif text-lg text-[#4B3832]">Call Us</h3>
-                  <p className="text-gray-600">+1 (555) 123-4567</p>
+                  <p className="text-gray-600">+977 9872625244</p>
                 </div>
               </div>
               <div className="flex items-start space-x-4">
@@ -102,9 +102,7 @@ const ContactUs = () => {
                   <h3 className="font-serif text-lg text-[#4B3832]">
                     Visit Us
                   </h3>
-                  <p className="text-gray-600">
-                    123 Fashion Avenue, New York, NY 10001
-                  </p>
+                  <p className="text-gray-600">Baluwatar, Kathmandu</p>
                 </div>
               </div>
             </div>

@@ -17,29 +17,32 @@ const CardComponent = ({
   };
 
   return (
-    <div className="w-full max-w-xs bg-white shadow-lg overflow-hidden transition-transform duration-300 hover:scale-105 border border-white">
-      <div
-        className="w-full h-52 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: `url(${image})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-      />
-      <div className="p-4 flex flex-col gap-3">
-        <div>
-          <h3 className="text-lg font-semibold text-gray-900 truncate">
-            {name}
-          </h3>
-          <p className="text-sm text-gray-600">{category}</p>
+    <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition cursor-pointer">
+      <div className="relative overflow-hidden h-64">
+        <img
+          src={image}
+          alt={name}
+          className="w-full h-full object-contain transition duration-500 hover:scale-105"
+        />
+        <div className="absolute top-2 right-2 bg-[#D4AF37] text-white text-xs px-2 py-1 rounded">
+          {category}
         </div>
-        <p className="text-xl font-bold text-gray-900">${price.toFixed(2)}</p>
-        <button
-          onClick={handleAddToCart}
-          className="w-full border-1 border-[#3A1C1A] text-[#3A1C1A] py-2 px-4 rounded-lg hover:bg-[#3A1C1A] hover:text-white transition-colors duration-200 font-medium"
-        >
-          Add to Cart
-        </button>
+      </div>
+      <div className="p-4">
+        <h3 className="font-serif text-lg font-semibold text-[#4B3832] mb-1">
+          {name}
+        </h3>
+        <div className="flex justify-between items-center mt-3">
+          <span className="font-serif text-[#D4AF37] font-bold">
+            ${price.toFixed(2)}
+          </span>
+          <button
+            onClick={handleAddToCart}
+            className="text-[#4B3832] hover:text-[#D4AF37] transition cursor-pointer"
+          >
+            Add to Cart
+          </button>
+        </div>
       </div>
     </div>
   );

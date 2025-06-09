@@ -16,6 +16,7 @@ import ContactUs from "./components/ContactUs";
 import Cart from "./components/Cart";
 import Profile from "./components/Profile";
 import Order from "./components/Order";
+import ProductDetails from "./components/ProductDetails";
 
 // Wrapper component to conditionally show NavBar and Footer
 const AppWrapper = () => {
@@ -36,6 +37,7 @@ const AppWrapper = () => {
         <Route path="/cart" element={<Cart />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/orders" element={<Order />} />
+        <Route path="/productdetails/:id" element={<ProductDetails />} />
       </Routes>
       {!hideNavBarAndFooter && <Footer />}
     </>

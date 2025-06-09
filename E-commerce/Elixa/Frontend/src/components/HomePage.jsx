@@ -19,9 +19,7 @@ const HomePage = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch(
-          `${backendUrl}/api/admin/get-products`
-        );
+        const response = await fetch(`${backendUrl}/api/admin/get-products`);
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
@@ -30,7 +28,7 @@ const HomePage = () => {
           ? data.data.map((product) => ({
               ...product,
               id: product._id,
-              image: `${backendUrl}${product.image}`, // Prepend base URL to image path
+              image: `${backendUrl}${product.image}`,
             }))
           : [];
         setProducts(productsArray);
@@ -42,7 +40,7 @@ const HomePage = () => {
       }
     };
     fetchProducts();
-  }, []);
+  }, [backendUrl]);
 
   const getCategoryImage = (category) => {
     if (!Array.isArray(products)) {
@@ -80,7 +78,7 @@ const HomePage = () => {
             className="max-w-3xl"
           >
             <h1 className="text-4xl md:text-6xl font-bold mb-6 font-serif tracking-tight">
-              Where Style Meets Soul{" "}
+              Where Style Meets Soul
             </h1>
             <div className="w-56 h-[2px] bg-[#D4AF37] mx-auto mb-10"></div>
             <motion.p
@@ -117,32 +115,33 @@ const HomePage = () => {
         </div>
       </div>
 
-      <div className="max-w-8xl bg-white py-6 pb-16">
+      <div className="max-w-8xl bg-white py-6 pt-16">
         <h2 className="text-3xl font-bold font-serif text-[#4B3832] mb-2 text-center relative">
           Shop By Category
         </h2>
         <div className="w-24 h-1 bg-[#D4AF37] mx-auto mb-10"></div>
         <div className="flex flex-wrap justify-center gap-10">
           {categories.map((category) => (
-            <div
+            <Link
               key={category}
+              to={`/product?category=${category}`}
               className="w-full sm:w-72 h-72 relative flex items-center"
             >
               <img
                 src={getCategoryImage(category)}
                 alt={`${category} category`}
-                className="w-full h-full object-cover rounded-lg shadow-md"
+                className="w-full h-full object-contain rounded-lg shadow-md"
               />
               <div className="absolute inset-0 bg-black/60 bg-opacity-30 rounded-lg"></div>
               <p className="absolute text-3xl font-extrabold top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white z-10">
                 {category}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
 
-      <div className="py-12 sm:px-6 bg-white">
+      <div className="py-12 sm:px-6 lg:px-[4.6rem] bg-white">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -155,17 +154,21 @@ const HomePage = () => {
           <div className="w-24 h-1 bg-[#D4AF37] mx-auto mb-10"></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
             {Array.isArray(products) && products.length > 0 ? (
-              products
-                .slice(0, 8)
-                .map((product) => (
+              products.slice(0, 8).map((product) => (
+                <Link
+                  key={product.id || product._id} // Use _id if id is not available
+                  to={`/productdetails/${product.id || product._id}`}
+                  className="block"
+                >
                   <CardComponent
-                    key={product.id}
                     image={product.image}
                     name={product.name}
                     category={product.category}
                     price={product.price}
+                    className="cursor-pointer" // Add pointer cursor
                   />
-                ))
+                </Link>
+              ))
             ) : (
               <p className="text-center col-span-full">
                 No products available.
