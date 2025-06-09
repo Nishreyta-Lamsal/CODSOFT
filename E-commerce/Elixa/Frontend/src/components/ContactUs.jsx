@@ -7,7 +7,6 @@ import { Link } from "react-router-dom";
 const ContactUs = () => {
   return (
     <div className="bg-[#F8F5F2]">
-      {/* Hero Section */}
       <div className="relative h-16 overflow-hidden bg-[#745d46]"></div>
 
       {/* Contact Form Section */}
@@ -180,7 +179,7 @@ const ContactUs = () => {
               <div className="flex justify-center items-center">
                 <button
                   type="submit"
-                  className="px-8 py-3 text-white bg-[#4B3832] font-medium rounded-full hover:bg-[#3A1C1A] transition duration-300 transform hover:scale-105"
+                  className="px-6 py-3 border border-[#4B3832] rounded bg-[#4B3832] hover:bg-[#342622] text-white text-center transition duration-300 transform hover:scale-105"
                 >
                   Send Message
                 </button>

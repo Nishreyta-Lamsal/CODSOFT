@@ -5,7 +5,7 @@ import { FiShoppingCart } from "react-icons/fi";
 import profileimg from "../assets/profileimg.jpg";
 
 const NavBar = () => {
-  const { user, isAuthenticated, logout } = useContext(AppContext);
+  const { user, isAuthenticated, logout, cart } = useContext(AppContext);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
@@ -15,6 +15,10 @@ const NavBar = () => {
     logout();
     navigate("/login");
   };
+
+  // Calculate total number of items in cart
+  const cartItemCount =
+    cart?.items?.reduce((total, item) => total + item.quantity, 0) || 0;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -110,7 +114,7 @@ const NavBar = () => {
               >
                 <FiShoppingCart className="w-5 h-5" />
                 <span className="absolute -top-1 -right-1 bg-[#4B3832] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                  0
+                  {cartItemCount}
                 </span>
               </Link>
 

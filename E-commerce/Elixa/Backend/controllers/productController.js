@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import productModel from "../models/productModel.js";
 
-// Add a new product
 const addProduct = async (req, res) => {
   try {
     const { name, description, category, price, quantity, isAvailable } =
@@ -39,7 +38,6 @@ const addProduct = async (req, res) => {
   }
 };
 
-// Update an existing product
 const updateProduct = async (req, res) => {
   try {
     const productId = req.params.id;
@@ -49,7 +47,6 @@ const updateProduct = async (req, res) => {
       updates.image = `/uploads/${req.file.filename}`;
     }
 
-    // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({
         success: false,
@@ -83,12 +80,10 @@ const updateProduct = async (req, res) => {
   }
 };
 
-// Delete a product
 const deleteProduct = async (req, res) => {
   try {
     const productId = req.params.id;
 
-    // Validate ObjectId
     if (!mongoose.Types.ObjectId.isValid(productId)) {
       return res.status(400).json({
         success: false,

@@ -4,10 +4,10 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
-import ProductCardComponent from "./ProductCardComponent"; // Adjust path as needed
+import ProductCardComponent from "./ProductCardComponent";
 
 const ProductDetails = () => {
-  const { backendUrl } = useContext(AppContext);
+  const { backendUrl, token, isAuthenticated, logout } = useContext(AppContext);
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
@@ -17,6 +17,7 @@ const ProductDetails = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [relatedLoading, setRelatedLoading] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false); 
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -101,19 +102,49 @@ const ProductDetails = () => {
     }
   };
 
-  const addToCart = () => {
-    toast.success(`${quantity} ${product.name} added to cart`);
-  };
+  const addToCart = async () => {
+    if (!isAuthenticated || !token) {
+      toast.error("Please log in to add items to your cart");
+      navigate("/login");
+      return;
+    }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8F5F2]">
-        <div className="text-2xl font-serif text-[#4B3832]">
-          Loading product details...
-        </div>
-      </div>
-    );
-  }
+    console.log("Token sent in request:", token);
+    setIsAddingToCart(true);
+    try {
+      const response = await fetch(`${backendUrl}/api/user/cart-add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          productId: id,
+          quantity,
+        }),
+      });
+
+      const responseData = await response.json();
+
+      if (response.status === 401) {
+        toast.error("Your session has expired. Please log in again.");
+        logout();
+        navigate("/login");
+        return;
+      }
+
+      if (responseData.success) {
+        toast.success(`${quantity} ${product.name} added to cart`);
+        navigate("/cart");
+      } else {
+        toast.error(responseData.message || "Failed to add product to cart");
+      }
+    } catch (error) {
+      toast.error("An error occurred while adding to cart");
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
 
   if (error) {
     return (
@@ -214,7 +245,6 @@ const ProductDetails = () => {
           </nav>
         </div>
 
-        {/* Product Details Section */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -337,9 +367,22 @@ const ProductDetails = () => {
               <div className="flex flex-col sm:flex-row gap-4 mt-auto">
                 <button
                   onClick={addToCart}
-                  className="px-6 py-3 bg-[#D4AF37] text-white rounded hover:bg-[#4B3832] transition flex-1"
+                  disabled={
+                    isAddingToCart ||
+                    (product.quantity !== undefined &&
+                      product.quantity < quantity) ||
+                    !product.isAvailable
+                  }
+                  className={`px-6 py-3 bg-[#D4AF37] text-white rounded hover:bg-[#4B3832] transition flex-1 ${
+                    isAddingToCart ||
+                    (product.quantity !== undefined &&
+                      product.quantity < quantity) ||
+                    !product.isAvailable
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
                 >
-                  Add to Cart
+                  {isAddingToCart ? "Adding..." : "Add to Cart"}
                 </button>
                 <button className="px-6 py-3 border border-[#4B3832] text-[#4B3832] rounded hover:bg-[#4B3832] hover:text-white transition flex-1">
                   Wishlist

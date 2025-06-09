@@ -98,7 +98,7 @@ const HomePage = () => {
             >
               <Link
                 to="/product"
-                className="px-8 py-3 text-white bg-[#4B3832] font-medium rounded-full hover:bg-[#3A1C1A] transition duration-300 transform hover:scale-105"
+                className="px-6 py-3 border border-[#4B3832] rounded bg-[#4B3832] hover:bg-[#342622]  text-white text-center transition duration-300 transform hover:scale-105"
               >
                 Discover Collections
               </Link>
@@ -202,7 +202,7 @@ const HomePage = () => {
           <div className="flex justify-center gap-4">
             <Link
               to="/register"
-              className="px-8 py-3 text-white bg-[#4B3832] font-medium rounded-full hover:bg-[#3A1C1A] transition duration-300 transform hover:scale-105"
+              className="px-6 py-3 border border-[#4B3832] rounded bg-[#4B3832] hover:bg-[#342622] text-white text-center transition duration-300 transform hover:scale-105"
             >
               Sign Up
             </Link>
