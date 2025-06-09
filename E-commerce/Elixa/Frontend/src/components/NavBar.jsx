@@ -1,13 +1,14 @@
 import React, { useContext, useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
-import { FiShoppingCart } from "react-icons/fi";
+import { FiShoppingCart, FiMenu, FiX } from "react-icons/fi";
 import profileimg from "../assets/profileimg.jpg";
 
 const NavBar = () => {
   const { user, isAuthenticated, logout, cart, backendUrl } =
-    useContext(AppContext); // Added backendUrl
+    useContext(AppContext);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
@@ -15,22 +16,17 @@ const NavBar = () => {
   const handleLogout = () => {
     logout();
     navigate("/login");
+    setMobileMenuOpen(false);
   };
 
-  // Calculate total number of items in cart
   const cartItemCount =
     cart?.items?.reduce((total, item) => total + item.quantity, 0) || 0;
 
-  // Construct profile image URL or use default
   const profileImage = user?.image ? `${backendUrl}/${user.image}` : profileimg;
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      setIsScrolled(window.scrollY > 50);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -47,9 +43,13 @@ const NavBar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen((prev) => !prev);
+  };
+
   return (
     <nav
-      className={`px-[7.4rem] py-4 flex justify-between items-center fixed top-0 z-50 w-full transition-colors duration-300 ${
+      className={`px-4 md:px-[7.4rem] py-4 flex justify-between items-center fixed top-0 z-50 w-full transition-colors duration-300 ${
         isScrolled ? "bg-white" : "bg-transparent"
       }`}
     >
@@ -62,8 +62,26 @@ const NavBar = () => {
         ELIXA
       </Link>
 
-      <div className="flex items-center space-x-8">
-        <ul className="hidden md:flex space-x-8">
+      <div className="md:hidden flex items-center">
+        <button onClick={toggleMobileMenu} className="focus:outline-none">
+          {mobileMenuOpen ? (
+            <FiX
+              className={`w-6 h-6 ${
+                isScrolled ? "text-[#2a2b1e]" : "text-white"
+              }`}
+            />
+          ) : (
+            <FiMenu
+              className={`w-6 h-6 ${
+                isScrolled ? "text-[#2a2b1e]" : "text-white"
+              }`}
+            />
+          )}
+        </button>
+      </div>
+
+      <div className="hidden md:flex items-center space-x-8">
+        <ul className="flex space-x-8">
           <li>
             <Link
               to="/"
@@ -106,7 +124,6 @@ const NavBar = () => {
           </li>
         </ul>
 
-        {/* Auth/Cart Section */}
         <div className="flex items-center space-x-4">
           {isAuthenticated ? (
             <>
@@ -132,7 +149,7 @@ const NavBar = () => {
                     alt="User Profile"
                     className="w-7 h-7 rounded-full object-contain border-2 border-white"
                     onError={(e) => {
-                      e.target.src = profileimg; 
+                      e.target.src = profileimg;
                     }}
                   />
                 </button>
@@ -162,13 +179,6 @@ const NavBar = () => {
                       >
                         My Orders
                       </Link>
-                      <Link
-                        to="/cart"
-                        className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-300 transition-colors duration-200 transform hover:scale-105 md:hidden"
-                        onClick={() => setDropdownOpen(false)}
-                      >
-                        My Cart
-                      </Link>
                       <button
                         onClick={handleLogout}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-900 hover:bg-gray-300 transition-colors duration-200 border-t border-gray-200 transform hover:scale-105"
@@ -183,13 +193,106 @@ const NavBar = () => {
           ) : (
             <Link
               to="/login"
-              className="w-full text-sm bg-[#4B3832] text-white py-1.5 px-4 rounded-lg hover:bg-[#3A1C1A] transition-colors flex items-center justify-center"
+              className="text-sm bg-[#4B3832] text-white py-1.5 px-4 rounded-lg hover:bg-[#3A1C1A] transition-colors"
             >
               Login
             </Link>
           )}
         </div>
       </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-16 left-0 w-full bg-white shadow-lg z-50">
+          <ul className="flex flex-col items-center space-y-4 py-4">
+            <li>
+              <Link
+                to="/"
+                className="text-sm text-[#2a2b1e] hover:text-gray-300 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Home
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/product"
+                className="text-sm text-[#2a2b1e] hover:text-gray-300 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Products
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/about"
+                className="text-sm text-[#2a2b1e] hover:text-gray-300 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                About
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/contact"
+                className="text-sm text-[#2a2b1e] hover:text-gray-300 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Contact
+              </Link>
+            </li>
+            {isAuthenticated ? (
+              <>
+                <li>
+                  <Link
+                    to="/cart"
+                    className="text-sm text-[#2a2b1e] hover:text-gray-300 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    My Cart
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/profile"
+                    className="text-sm text-[#2a2b1e] hover:text-gray-300 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    My Profile
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/orders"
+                    className="text-sm text-[#2a2b1e] hover:text-gray-300 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    My Orders
+                  </Link>
+                </li>
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="text-sm text-[#2a2b1e] hover:text-gray-300 transition-colors"
+                  >
+                    Sign Out
+                  </button>
+                </li>
+              </>
+            ) : (
+              <li>
+                <Link
+                  to="/login"
+                  className="text-sm bg-[#4B3832] text-white py-1.5 px-4 rounded-lg hover:bg-[#3A1C1A] transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Login
+                </Link>
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
     </nav>
   );
 };

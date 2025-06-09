@@ -81,7 +81,7 @@ const Register = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-6"
+      className="min-h-screen flex items-center justify-center p-4 sm:p-6"
       style={{
         backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${bgImg})`,
         backgroundSize: "cover",
@@ -89,11 +89,15 @@ const Register = () => {
         backgroundRepeat: "no-repeat",
       }}
     >
-      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-lg overflow-hidden flex border-1 border-gray-200">
-        <div className="w-1/2 p-8 flex flex-col justify-center bg-white bg-opacity-90">
-          <h1 className="text-2xl font-semibold text-gray-800 mb-6">ELIXA</h1>
-          <h2 className="text-xl font-medium text-gray-700 mb-4">Register</h2>
-          <p className="text-sm text-gray-500 mb-6">
+      <div className="w-full max-w-full sm:max-w-4xl bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col md:flex-row border-1 border-gray-200">
+        <div className="w-full md:w-1/2 p-6 sm:p-8 flex flex-col justify-center bg-white bg-opacity-90">
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-6">
+            ELIXA
+          </h1>
+          <h2 className="text-lg sm:text-xl font-medium text-gray-700 mb-4">
+            Register
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-500 mb-6">
             Choose from 20+ products across 5+ categories
           </p>
           <div className="relative mb-4">
@@ -105,7 +109,7 @@ const Register = () => {
             <div>
               <label
                 htmlFor="name"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-xs sm:text-sm font-medium text-gray-700"
               >
                 Name
               </label>
@@ -116,13 +120,13 @@ const Register = () => {
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-brown-500"
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-brown-500 text-sm sm:text-base"
               />
             </div>
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-xs sm:text-sm font-medium text-gray-700"
               >
                 Email
               </label>
@@ -133,13 +137,13 @@ const Register = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-brown-500"
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-brown-500 text-sm sm:text-base"
               />
             </div>
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-xs sm:text-sm font-medium text-gray-700"
               >
                 Password
               </label>
@@ -150,13 +154,13 @@ const Register = () => {
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-brown-500"
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-brown-500 text-sm sm:text-base"
               />
             </div>
             <div>
               <label
                 htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-xs sm:text-sm font-medium text-gray-700"
               >
                 Confirm Password
               </label>
@@ -167,12 +171,12 @@ const Register = () => {
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 required
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-brown-500"
+                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brown-500 focus:border-brown-500 text-sm sm:text-base"
               />
             </div>
             <button
               type="submit"
-              className="w-full bg-[#4B3832] text-white py-2 px-4 rounded-full hover:bg-[#3A1C1A] transition-colors flex items-center justify-center"
+              className="w-full bg-[#4B3832] text-white py-2 px-4 rounded-full hover:bg-[#3A1C1A] transition-colors flex items-center justify-center text-sm sm:text-base"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -197,7 +201,7 @@ const Register = () => {
               ) : null}
               {isLoading ? "Registering..." : "Register"}
             </button>
-            <p className="text-sm text-gray-500 mt-4 text-center">
+            <p className="text-xs sm:text-sm text-gray-500 mt-4 text-center">
               Already have an account?{" "}
               <Link
                 to="/login"
@@ -209,7 +213,7 @@ const Register = () => {
           </form>
         </div>
         <div
-          className="w-1/2 bg-cover bg-center"
+          className="hidden md:block md:w-1/2 bg-cover bg-center"
           style={{ backgroundImage: `url(${login})` }}
         ></div>
       </div>
