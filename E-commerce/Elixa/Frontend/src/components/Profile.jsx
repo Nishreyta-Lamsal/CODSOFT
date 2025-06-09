@@ -6,8 +6,8 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const Profile = () => {
-  const { backendUrl, token } = useContext(AppContext);
-  const [user, setUser] = useState(null);
+  const { backendUrl, token, setUser } = useContext(AppContext); 
+  const [user, setLocalUser] = useState(null); 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -30,7 +30,7 @@ const Profile = () => {
         });
         const data = await response.json();
         if (data.success) {
-          setUser(data.user);
+          setLocalUser(data.user);
           setFormData({
             name: data.user.name || "",
             image: null,
@@ -102,7 +102,8 @@ const Profile = () => {
       });
       const data = await response.json();
       if (data.success) {
-        setUser(data.user);
+        setLocalUser(data.user); 
+        setUser(data.user); 
         setSuccess(data.message);
         setIsEditing(false);
         setFormData((prev) => ({ ...prev, image: null }));
@@ -123,7 +124,6 @@ const Profile = () => {
       return () => clearTimeout(timer);
     }
   }, [success]);
-  
 
   return (
     <div className="bg-[#F8F5F2] min-h-screen">

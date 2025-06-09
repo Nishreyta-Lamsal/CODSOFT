@@ -5,7 +5,8 @@ import { FiShoppingCart } from "react-icons/fi";
 import profileimg from "../assets/profileimg.jpg";
 
 const NavBar = () => {
-  const { user, isAuthenticated, logout, cart } = useContext(AppContext);
+  const { user, isAuthenticated, logout, cart, backendUrl } =
+    useContext(AppContext); // Added backendUrl
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
@@ -19,6 +20,9 @@ const NavBar = () => {
   // Calculate total number of items in cart
   const cartItemCount =
     cart?.items?.reduce((total, item) => total + item.quantity, 0) || 0;
+
+  // Construct profile image URL or use default
+  const profileImage = user?.image ? `${backendUrl}/${user.image}` : profileimg;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -124,11 +128,11 @@ const NavBar = () => {
                   className="flex items-center space-x-2 focus:outline-none"
                 >
                   <img
-                    src={user?.profilePicture || profileimg}
+                    src={profileImage}
                     alt="User Profile"
-                    className="w-7 h-7 rounded-full object-cover border-2 border-white"
+                    className="w-7 h-7 rounded-full object-contain border-2 border-white"
                     onError={(e) => {
-                      e.target.src = profileimg;
+                      e.target.src = profileimg; 
                     }}
                   />
                 </button>

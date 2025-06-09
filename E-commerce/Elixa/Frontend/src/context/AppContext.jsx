@@ -14,13 +14,38 @@ export const AppProvider = ({ children }) => {
     if (token) {
       localStorage.setItem("token", token);
       setIsAuthenticated(true);
-      fetchCart(); // Fetch cart when token is available
+      fetchUserData();
+      fetchCart();
     } else {
       localStorage.removeItem("token");
       setIsAuthenticated(false);
-      setCart(null); // Clear cart on logout
+      setUser(null);
+      setCart(null);
     }
   }, [token]);
+
+  const fetchUserData = async () => {
+    try {
+      if (!token) return;
+      const response = await fetch(`${backendUrl}/api/user/get-profile`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      if (data.success) {
+        setUser(data.user);
+      } else {
+        setUser(null);
+        console.error("Failed to fetch user data:", data.message);
+      }
+    } catch (err) {
+      console.error("Fetch user data error:", err);
+      setUser(null);
+    }
+  };
 
   const fetchCart = async () => {
     try {
@@ -63,10 +88,12 @@ export const AppProvider = ({ children }) => {
         token,
         isAuthenticated,
         login,
+        setUser,
         logout,
         backendUrl,
         cart,
         fetchCart,
+        fetchUserData,
       }}
     >
       {children}
