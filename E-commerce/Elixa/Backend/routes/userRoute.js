@@ -5,6 +5,7 @@ import { addToCart, removeFromCart, updateCart, viewCart } from "../controllers/
 import upload from "../multer/multer.js";
 import { createContact } from "../controllers/contactController.js";
 import { initiatePayment, verifyPayment } from "../controllers/paymentController.js";
+import { viewOrders } from "../controllers/orderController.js";
 
 const userRouter = express.Router();
 
@@ -20,5 +21,6 @@ userRouter.put("/update-profile", authUser, upload.single("image"), updateUserPr
 userRouter.post("/contact", createContact);
 userRouter.post("/payment/initiate",authUser, initiatePayment);
 userRouter.post("/payment/verify", authUser, verifyPayment);
+userRouter.get("/orders", authUser, viewOrders);
 
 export default userRouter;

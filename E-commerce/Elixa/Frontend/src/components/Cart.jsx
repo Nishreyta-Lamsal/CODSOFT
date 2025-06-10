@@ -162,29 +162,64 @@ const Cart = () => {
   };
 
   const handleCheckout = async () => {
-    if (paymentLoading) return; // Prevent multiple clicks
+    if (paymentLoading) return;
     try {
       setPaymentLoading(true);
       const token = localStorage.getItem("token");
       if (!token) {
         toast.error("Please log in to proceed to checkout");
         setPaymentLoading(false);
-        navigate("/login");
+        setTimeout(() => {
+          navigate("/login");
+        }, 3000); 
         return;
       }
 
+      // Fetch user profile
+      const profileRes = await fetch(`${backendUrl}/api/user/get-profile`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const profileData = await profileRes.json();
+
+      if (
+        !profileRes.ok ||
+        !profileData.success ||
+        !profileData.user?.address ||
+        !profileData.user?.phone
+      ) {
+        toast.warning(
+          "Please enter your address and phone number before checking out."
+        );
+        setPaymentLoading(false);
+        setTimeout(() => {
+          navigate("/profile");
+        }, 3000);
+        return;
+      }
+
+      // New: Check if address is empty or phone is default
+      const { address, phone } = profileData.user;
+      if ((!address.line1 && !address.line2) || phone === "0000000000") {
+        toast.warning(
+          "Please provide a valid address and phone number before checkout."
+        );
+        setPaymentLoading(false);
+        setTimeout(() => {
+          navigate("/profile");
+        }, 3000); 
+        return;
+      }
+      
       if (!cart || !cart._id || !cart.totalPrice) {
         toast.error("Invalid cart or no items to checkout");
         setPaymentLoading(false);
         return;
       }
-
-      console.log(
-        "[DEBUG] Initiating payment for cart:",
-        cart._id,
-        "Amount:",
-        cart.totalPrice
-      );
 
       const response = await fetch(`${backendUrl}/api/user/payment/initiate`, {
         method: "POST",
@@ -201,25 +236,15 @@ const Cart = () => {
       });
 
       const data = await response.json();
-      console.log("[DEBUG] Payment initiation response:", data);
 
       if (response.ok && data.success) {
         if (data.payment?.paymentUrl) {
-          console.log(
-            "[DEBUG] Redirecting to payment URL:",
-            data.payment.paymentUrl
-          );
           window.location.href = data.payment.paymentUrl;
         } else {
           toast.error("Payment URL not provided");
-          console.error("[DEBUG] Missing paymentUrl in response:", data);
         }
       } else if (data.message === "Payment already initiated for this cart") {
         if (data.payment?.paymentUrl) {
-          console.log(
-            "[DEBUG] Redirecting to existing payment URL:",
-            data.payment.paymentUrl
-          );
           toast.info(
             "A payment is already pending for this cart. Redirecting..."
           );
@@ -233,17 +258,20 @@ const Cart = () => {
     } catch (error) {
       console.error("[DEBUG] Payment initiation error:", error);
       toast.error(error.message || "Payment initiation failed");
+    } finally {
       setPaymentLoading(false);
     }
   };
-
+  
   const verifyPayment = async (pidx) => {
     try {
       setIsVerifying(true);
       const token = localStorage.getItem("token");
       if (!token) {
         toast.error("Please log in to verify payment");
-        navigate("/login");
+        setTimeout(() => {
+          navigate("/login");
+        }, 3000);
         return;
       }
 
@@ -262,9 +290,19 @@ const Cart = () => {
       console.log("[DEBUG] Payment verification response:", data);
 
       if (data.success) {
-        toast.success("Payment successful!");
-        setCart(null);
-        navigate("/order-confirmation");
+        if (data.cart?.status === "purchased") {
+          toast.success("Payment successful! Order confirmed.");
+          setCart(null); // Clear cart only if status is "purchased"
+          navigate("/order-confirmation");
+        } else {
+          // Keep cart in UI and notify user
+          toast.info(
+            `Payment is still ${
+              data.cart?.status || "pending"
+            }. Your cart remains active.`
+          );
+          setCart(data.cart || cart); // Update cart with latest data if available
+        }
       } else {
         toast.error(data.message || "Payment verification failed");
       }

@@ -10,6 +10,7 @@ const orderSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "cart",
     required: true,
+    unique: true,
   },
   items: [
     {

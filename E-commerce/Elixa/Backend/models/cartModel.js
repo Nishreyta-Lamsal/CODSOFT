@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import orderModel from "./orderModel.js";
 
 const cartSchema = new mongoose.Schema({
   user: {
@@ -32,6 +31,10 @@ const cartSchema = new mongoose.Schema({
     enum: ["pending", "active", "purchased", "cancelled"],
     default: "active",
   },
+  isOrderCreated: {
+    type: Boolean,
+    default: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -42,21 +45,8 @@ const cartSchema = new mongoose.Schema({
   },
 });
 
-cartSchema.pre("save", async function (next) {
-  if (this.isModified("status") && this.status === "purchased") {
-    try {
-      const order = new orderModel({
-        user: this.user,
-        cart: this._id,
-        items: this.items,
-        totalPrice: this.totalPrice,
-        status: "purchased",
-      });
-      await order.save();
-    } catch (error) {
-      return next(error); 
-    }
-  }
+cartSchema.pre("save", function (next) {
+  this.updatedAt = Date.now();
   next();
 });
 

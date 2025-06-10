@@ -22,6 +22,18 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      toast.info("You are already logged in!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
+      return;
+    }
+
     try {
       const response = await fetch(`${backendUrl}/api/user/login`, {
         method: "POST",
