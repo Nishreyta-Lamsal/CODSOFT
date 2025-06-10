@@ -18,6 +18,7 @@ const Cart = lazy(() => import("./components/Cart"));
 const Profile = lazy(() => import("./components/Profile"));
 const Order = lazy(() => import("./components/Order"));
 const ProductDetails = lazy(() => import("./components/ProductDetails"));
+const PaymentVerify = lazy(() => import("./components/PaymentVerify"));
 
 const AppWrapper = () => {
   const location = useLocation();
@@ -37,6 +38,7 @@ const AppWrapper = () => {
         <Route path="/cart" element={<Cart />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/orders" element={<Order />} />
+        <Route path="/payment/verify" element={<PaymentVerify />} />
         <Route path="/productdetails/:id" element={<ProductDetails />} />
       </Routes>
       {!hideNavBarAndFooter && <Footer />}

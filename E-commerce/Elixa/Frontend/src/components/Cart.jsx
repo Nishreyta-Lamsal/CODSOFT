@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AppContext } from "../context/AppContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 
@@ -9,6 +9,10 @@ const Cart = () => {
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     fetchCart();
@@ -20,7 +24,7 @@ const Cart = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         setError("No authentication token found. Please log in.");
-        toast.error("Please log in to view your cart"); 
+        toast.error("Please log in to view your cart");
         setLoading(false);
         return;
       }
@@ -35,7 +39,7 @@ const Cart = () => {
 
       if (!response.ok) {
         const text = await response.text();
-        console.error("Non-JSON response:", text);
+        console.error("[DEBUG] Non-JSON response:", text);
         throw new Error(
           `Request failed with status ${response.status}: ${response.statusText}`
         );
@@ -44,7 +48,7 @@ const Cart = () => {
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         const text = await response.text();
-        console.error("Unexpected response format:", text);
+        console.error("[DEBUG] Unexpected response format:", text);
         throw new Error("Received non-JSON response from server");
       }
 
@@ -59,7 +63,7 @@ const Cart = () => {
       const errorMessage = err.message || "Failed to fetch cart";
       setError(errorMessage);
       toast.error(errorMessage);
-      console.error("Fetch cart error:", err);
+      console.error("[DEBUG] Fetch cart error:", err);
     } finally {
       setLoading(false);
     }
@@ -100,7 +104,7 @@ const Cart = () => {
         ? "Insufficient stock for requested quantity"
         : err.message || "Failed to update cart";
       toast.error(errorMessage);
-      console.error("Update cart error:", err);
+      console.error("[DEBUG] Update cart error:", err);
     }
   };
 
@@ -153,9 +157,133 @@ const Cart = () => {
       const errorMessage = err.message || "Failed to remove item";
       setError(errorMessage);
       toast.error(errorMessage);
-      console.error("Remove from cart error:", err);
+      console.error("[DEBUG] Remove from cart error:", err);
     }
   };
+
+  const handleCheckout = async () => {
+    if (paymentLoading) return; // Prevent multiple clicks
+    try {
+      setPaymentLoading(true);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Please log in to proceed to checkout");
+        setPaymentLoading(false);
+        navigate("/login");
+        return;
+      }
+
+      if (!cart || !cart._id || !cart.totalPrice) {
+        toast.error("Invalid cart or no items to checkout");
+        setPaymentLoading(false);
+        return;
+      }
+
+      console.log(
+        "[DEBUG] Initiating payment for cart:",
+        cart._id,
+        "Amount:",
+        cart.totalPrice
+      );
+
+      const response = await fetch(`${backendUrl}/api/user/payment/initiate`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cartId: cart._id,
+          amount: cart.totalPrice,
+          orderId: `Order_${cart._id}`,
+          orderName: `Cart Order ${cart._id}`,
+        }),
+      });
+
+      const data = await response.json();
+      console.log("[DEBUG] Payment initiation response:", data);
+
+      if (response.ok && data.success) {
+        if (data.payment?.paymentUrl) {
+          console.log(
+            "[DEBUG] Redirecting to payment URL:",
+            data.payment.paymentUrl
+          );
+          window.location.href = data.payment.paymentUrl;
+        } else {
+          toast.error("Payment URL not provided");
+          console.error("[DEBUG] Missing paymentUrl in response:", data);
+        }
+      } else if (data.message === "Payment already initiated for this cart") {
+        if (data.payment?.paymentUrl) {
+          console.log(
+            "[DEBUG] Redirecting to existing payment URL:",
+            data.payment.paymentUrl
+          );
+          toast.info(
+            "A payment is already pending for this cart. Redirecting..."
+          );
+          window.location.href = data.payment.paymentUrl;
+        } else {
+          toast.error("Existing payment found, but no payment URL available");
+        }
+      } else {
+        throw new Error(data.message || "Payment initiation failed");
+      }
+    } catch (error) {
+      console.error("[DEBUG] Payment initiation error:", error);
+      toast.error(error.message || "Payment initiation failed");
+      setPaymentLoading(false);
+    }
+  };
+
+  const verifyPayment = async (pidx) => {
+    try {
+      setIsVerifying(true);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Please log in to verify payment");
+        navigate("/login");
+        return;
+      }
+
+      console.log("[DEBUG] Verifying payment for pidx:", pidx);
+
+      const response = await fetch(`${backendUrl}/api/user/payment/verify`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ pidx }),
+      });
+
+      const data = await response.json();
+      console.log("[DEBUG] Payment verification response:", data);
+
+      if (data.success) {
+        toast.success("Payment successful!");
+        setCart(null);
+        navigate("/order-confirmation");
+      } else {
+        toast.error(data.message || "Payment verification failed");
+      }
+    } catch (error) {
+      console.error("[DEBUG] Verification error:", error);
+      toast.error(`Payment verification failed: ${error.message}`);
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const pidx = queryParams.get("pidx");
+    console.log("[DEBUG] Redirect params:", { pidx });
+    if (pidx && !isVerifying) {
+      verifyPayment(pidx);
+    }
+  }, [location.search]);
 
   if (loading) {
     return (
@@ -307,8 +435,36 @@ const Cart = () => {
                   >
                     Continue Shopping
                   </Link>
-                  <button className="px-6 py-3 bg-[#D4AF37] text-white rounded hover:bg-[#4B3832] transition">
-                    Proceed to Checkout
+                  <button
+                    onClick={handleCheckout}
+                    disabled={paymentLoading}
+                    className="px-6 py-3 bg-[#D4AF37] text-white rounded hover:bg-[#4B3832] transition text-center disabled:opacity-50 flex items-center justify-center"
+                  >
+                    {paymentLoading ? (
+                      <>
+                        <svg
+                          className="animate-spin h-5 w-5 mr-2 text-white"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                        Processing...
+                      </>
+                    ) : (
+                      "Proceed to Checkout"
+                    )}
                   </button>
                 </div>
               </div>
