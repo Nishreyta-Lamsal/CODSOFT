@@ -11,7 +11,10 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.8",
+    "install": "^0.13.0",
+    "khalti-checkout-web": "^2.2.0",
     "motion": "^12.16.0",
+    "npm": "^11.4.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-icons": "^5.5.0",

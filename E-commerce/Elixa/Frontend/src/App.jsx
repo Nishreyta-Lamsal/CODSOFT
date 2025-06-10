@@ -1,31 +1,31 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   useLocation,
 } from "react-router-dom";
-import HomePage from "./components/HomePage";
-import Login from "./components/Login";
-import Register from "./components/Register";
-import NavBar from "./components/NavBar";
-import Footer from "./components/Footer";
-import AboutUs from "./components/AboutUs";
-import Products from "./components/Products";
-import ContactUs from "./components/ContactUs";
-import Cart from "./components/Cart";
-import Profile from "./components/Profile";
-import Order from "./components/Order";
-import ProductDetails from "./components/ProductDetails";
 
-// Wrapper component to conditionally show NavBar and Footer
+const HomePage = lazy(() => import("./components/HomePage"));
+const Login = lazy(() => import("./components/Login"));
+const Register = lazy(() => import("./components/Register"));
+const NavBar = lazy(() => import("./components/NavBar"));
+const Footer = lazy(() => import("./components/Footer"));
+const AboutUs = lazy(() => import("./components/AboutUs"));
+const Products = lazy(() => import("./components/Products"));
+const ContactUs = lazy(() => import("./components/ContactUs"));
+const Cart = lazy(() => import("./components/Cart"));
+const Profile = lazy(() => import("./components/Profile"));
+const Order = lazy(() => import("./components/Order"));
+const ProductDetails = lazy(() => import("./components/ProductDetails"));
+
 const AppWrapper = () => {
   const location = useLocation();
   const hideNavBarAndFooter =
     location.pathname === "/login" || location.pathname === "/register";
 
   return (
-    <>
+    <Suspense fallback={<div>Loading...</div>}>
       {!hideNavBarAndFooter && <NavBar />}
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -40,7 +40,7 @@ const AppWrapper = () => {
         <Route path="/productdetails/:id" element={<ProductDetails />} />
       </Routes>
       {!hideNavBarAndFooter && <Footer />}
-    </>
+    </Suspense>
   );
 };
 
