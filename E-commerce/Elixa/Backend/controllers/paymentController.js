@@ -52,6 +52,10 @@ const initiatePayment = async (req, res) => {
       });
     }
 
+    const usdToNprRate = 135;
+    const amountInNPR = amount * usdToNprRate;
+    const amountInPaisa = Math.round(amountInNPR * 100);
+
     const orderId = `ORDER_${cart._id}_${Date.now()}`;
 
     const response = await axios.post(
@@ -59,7 +63,7 @@ const initiatePayment = async (req, res) => {
       {
         return_url: `${process.env.FRONTEND_URL}payment/verify`,
         website_url: `${process.env.FRONTEND_URL}/`,
-        amount: amount * 100,
+        amount: amountInPaisa,
         purchase_order_id: orderId,
         purchase_order_name: `Order_${cart._id}`,
         customer_info: {
@@ -96,6 +100,7 @@ const initiatePayment = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error(error);
     res.json({ success: false, message: "Payment initiation failed" });
   }
 };

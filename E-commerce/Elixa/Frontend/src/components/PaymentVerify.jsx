@@ -166,7 +166,7 @@ const PaymentVerify = () => {
               <h2 className="text-2xl font-serif font-bold text-[#4B3832] mb-4">
                 Payment Successful!
               </h2>
-              <div className="text-left mb-6 space-y-3">
+              <div className="text-center mb-6 space-y-3">
                 <p className="text-gray-700">
                   <span className="font-medium text-[#4B3832]">
                     Payment ID (pidx):
@@ -186,7 +186,7 @@ const PaymentVerify = () => {
                     Payable Amount:
                   </span>{" "}
                   <span className="text-gray-600">
-                    NPR{" "}
+                    $ {" "}
                     {paymentDetails.amount
                       ? (paymentDetails.amount / 100).toFixed(2)
                       : "N/A"}

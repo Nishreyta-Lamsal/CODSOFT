@@ -204,7 +204,7 @@ const Cart = () => {
       const { address, phone } = profileData.user;
       if ((!address.line1 && !address.line2) || phone === "0000000000") {
         toast.warning(
-          "Please provide a valid address and phone number before checkout."
+          "Please provide your shipping address and phone number before checkout."
         );
         setPaymentLoading(false);
         setTimeout(() => {
