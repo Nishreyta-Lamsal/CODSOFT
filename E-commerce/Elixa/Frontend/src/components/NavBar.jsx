@@ -147,7 +147,7 @@ const NavBar = () => {
                   <img
                     src={profileImage}
                     alt="User Profile"
-                    className="w-7 h-7 rounded-full object-contain border-2 border-white"
+                    className="w-7 h-7 rounded-full object-cover border-2 border-white"
                     onError={(e) => {
                       e.target.src = profileimg;
                     }}

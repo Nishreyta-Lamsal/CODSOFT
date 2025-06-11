@@ -200,7 +200,6 @@ const Cart = () => {
         return;
       }
 
-      // Check if address is empty or phone is default
       const { address, phone } = profileData.user;
       if ((!address.line1 && !address.line2) || phone === "0000000000") {
         toast.warning(
@@ -287,7 +286,7 @@ const Cart = () => {
         if (data.cart?.status === "purchased") {
           toast.success("Payment successful! Order confirmed.");
           setLocalCart(null);
-          setCart(null); // Clear AppContext cart state
+          setCart(null);
           navigate("/order-confirmation");
         } else {
           toast.info(
@@ -296,7 +295,7 @@ const Cart = () => {
             }. Your cart remains active.`
           );
           setLocalCart(data.cart || cart);
-          setCart(data.cart || cart); // Update AppContext cart state
+          setCart(data.cart || cart);
         }
       } else {
         toast.error(data.message || "Payment verification failed");
@@ -451,13 +450,38 @@ const Cart = () => {
               ))}
 
               <div className="bg-white p-6 rounded-lg shadow-sm border border-[#e8e1d9] mt-8">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-serif font-semibold text-[#4B3832]">
-                    Order Summary
-                  </h3>
-                  <h3 className="text-2xl font-serif font-bold text-[#D4AF37]">
-                    ${cart.totalPrice.toFixed(2)}
-                  </h3>
+                <h3 className="text-xl font-serif font-semibold text-[#4B3832] mb-6">
+                  Order Summary
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between text-gray-600">
+                    <span>
+                      {cart.items.length}{" "}
+                      {cart.items.length === 1 ? "item" : "items"} (
+                      {cart.items.reduce(
+                        (total, item) => total + item.quantity,
+                        0
+                      )}{" "}
+                      quantity total)
+                    </span>
+                    <span>${cart.totalPrice.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-600">
+                    <span>Estimated Shipping</span>
+                    <span className="text-[#D4AF37]">Free</span>
+                  </div>
+                  <div className="flex justify-between text-gray-600">
+                    <span>Estimated Taxes</span>
+                    <span>$0.00</span>
+                  </div>
+                  <div className="border-t border-[#e8e1d9] pt-4 flex justify-between items-center">
+                    <span className="text-lg font-serif font-semibold text-[#4B3832]">
+                      Total
+                    </span>
+                    <span className="text-xl font-serif font-bold text-[#D4AF37]">
+                      ${cart.totalPrice.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
                 <div className="mt-6 flex flex-col sm:flex-row gap-4">
                   <Link
