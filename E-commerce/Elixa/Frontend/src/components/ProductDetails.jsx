@@ -17,7 +17,7 @@ const ProductDetails = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [relatedLoading, setRelatedLoading] = useState(false);
-  const [isAddingToCart, setIsAddingToCart] = useState(false); 
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -61,7 +61,6 @@ const ProductDetails = () => {
           );
         }
         const responseData = await response.json();
-        console.log("Related products API response:", responseData);
         const related = Array.isArray(responseData.data)
           ? responseData.data
               .filter(
@@ -71,10 +70,8 @@ const ProductDetails = () => {
               )
               .slice(0, 4)
           : [];
-        console.log("Filtered related products:", related);
         setRelatedProducts(related);
       } catch (err) {
-        console.error("Error fetching related products:", err);
         toast.error("Failed to load related products");
       } finally {
         setRelatedLoading(false);
@@ -105,11 +102,12 @@ const ProductDetails = () => {
   const addToCart = async () => {
     if (!isAuthenticated || !token) {
       toast.error("Please log in to add items to your cart");
-      navigate("/login");
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
       return;
     }
 
-    console.log("Token sent in request:", token);
     setIsAddingToCart(true);
     try {
       const response = await fetch(`${backendUrl}/api/user/cart-add`, {
@@ -128,8 +126,10 @@ const ProductDetails = () => {
 
       if (response.status === 401) {
         toast.error("Your session has expired. Please log in again.");
-        logout();
-        navigate("/login");
+        setTimeout(() => {
+          logout();
+          navigate("/login");
+        }, 3000);
         return;
       }
 
@@ -176,12 +176,14 @@ const ProductDetails = () => {
     );
   }
 
+  const isOutOfStock = !product.isAvailable || product.quantity === 0;
+
   return (
     <div className="bg-[#F8F5F2] min-h-screen">
       <div className="relative h-16 overflow-hidden bg-[#745d46]"></div>
 
       <div className="py-12 px-4 sm:px-6 lg:px-8">
-        <ToastContainer position="bottom-right" />
+        <ToastContainer position="top-right" />
 
         <div className="max-w-7xl mx-auto mb-8">
           <nav className="flex" aria-label="Breadcrumb">
@@ -343,7 +345,12 @@ const ProductDetails = () => {
                 <div className="flex items-center">
                   <button
                     onClick={decrementQuantity}
-                    className="px-3 py-1 bg-gray-200 rounded-l hover:bg-gray-300"
+                    disabled={isOutOfStock || quantity <= 1}
+                    className={`px-3 py-1 bg-gray-200 rounded-l hover:bg-gray-300 ${
+                      isOutOfStock || quantity <= 1
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }`}
                   >
                     -
                   </button>
@@ -353,11 +360,19 @@ const ProductDetails = () => {
                     max="10"
                     value={quantity}
                     onChange={handleQuantityChange}
-                    className="w-16 py-1 text-center border-t border-b border-gray-300"
+                    disabled={isOutOfStock}
+                    className={`w-16 py-1 text-center border-t border-b border-gray-300 ${
+                      isOutOfStock ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
                   />
                   <button
                     onClick={incrementQuantity}
-                    className="px-3 py-1 bg-gray-200 rounded-r hover:bg-gray-300"
+                    disabled={isOutOfStock || quantity >= 10}
+                    className={`px-3 py-1 bg-gray-200 rounded-r hover:bg-gray-300 ${
+                      isOutOfStock || quantity >= 10
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }`}
                   >
                     +
                   </button>
@@ -367,22 +382,18 @@ const ProductDetails = () => {
               <div className="flex flex-col sm:flex-row gap-4 mt-auto">
                 <button
                   onClick={addToCart}
-                  disabled={
-                    isAddingToCart ||
-                    (product.quantity !== undefined &&
-                      product.quantity < quantity) ||
-                    !product.isAvailable
-                  }
+                  disabled={isAddingToCart || isOutOfStock}
                   className={`px-6 py-3 bg-[#D4AF37] text-white rounded hover:bg-[#4B3832] transition flex-1 ${
-                    isAddingToCart ||
-                    (product.quantity !== undefined &&
-                      product.quantity < quantity) ||
-                    !product.isAvailable
+                    isAddingToCart || isOutOfStock
                       ? "opacity-50 cursor-not-allowed"
                       : ""
                   }`}
                 >
-                  {isAddingToCart ? "Adding..." : "Add to Cart"}
+                  {isAddingToCart
+                    ? "Adding..."
+                    : isOutOfStock
+                    ? "Out of Stock"
+                    : "Add to Cart"}
                 </button>
               </div>
             </div>

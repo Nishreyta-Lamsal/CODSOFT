@@ -18,8 +18,11 @@ const initiatePayment = async (req, res) => {
     }
 
     const cart = await cartModel.findById(cartId).populate("user");
-    if (!cart || cart.status !== "active") {
-      return res.json({ success: false, message: "Invalid or inactive cart" });
+    if (!cart || cart.status !== "pending") {
+      return res.json({
+        success: false,
+        message: "Invalid or non-pending cart",
+      });
     }
 
     if (!req.user || req.user._id.toString() !== cart.user._id.toString()) {
@@ -82,9 +85,6 @@ const initiatePayment = async (req, res) => {
     });
     await payment.save();
 
-    cart.status = "pending";
-    await cart.save();
-
     res.json({
       success: true,
       message: "Payment initiated successfully",
@@ -96,7 +96,6 @@ const initiatePayment = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Error initiating payment:", error);
     res.json({ success: false, message: "Payment initiation failed" });
   }
 };
@@ -108,14 +107,8 @@ const verifyPayment = async (req, res) => {
     return res.json({ success: false, message: "pidx is required" });
   }
 
-  console.log(
-    `[${new Date().toISOString()}] Attempt to verify payment for pidx: ${pidx}`
-  );
 
   if (processingPidx.has(pidx)) {
-    console.log(
-      `[${new Date().toISOString()}] pidx ${pidx} is already being processed`
-    );
     return res.json({
       success: false,
       message: "Payment verification is already in progress",
@@ -132,11 +125,6 @@ const verifyPayment = async (req, res) => {
       const session = await mongoose.startSession();
       session.startTransaction();
       try {
-        console.log(
-          `[${new Date().toISOString()}] Attempt ${
-            attempt + 1
-          }: Verifying payment for pidx: ${pidx}`
-        );
 
         const payment = await PaymentModel.findOne({ pidx })
           .populate("cart")
@@ -159,9 +147,6 @@ const verifyPayment = async (req, res) => {
             .findOne({ cart: payment.cart._id })
             .session(session);
           await session.commitTransaction();
-          console.log(
-            `[${new Date().toISOString()}] Payment already processed for pidx: ${pidx}`
-          );
           return res.json({
             success: true,
             message: "Payment already verified",
@@ -230,9 +215,6 @@ const verifyPayment = async (req, res) => {
           }
 
           await session.commitTransaction();
-          console.log(
-            `[${new Date().toISOString()}] Payment verified and order processed for pidx: ${pidx}`
-          );
           return res.json({
             success: true,
             message: order
@@ -265,7 +247,7 @@ const verifyPayment = async (req, res) => {
           payment.paymentStatus = "failed";
           await payment.save({ session });
 
-          cart.status = "active";
+          cart.status = "pending";
           await cart.save({ session });
 
           await session.commitTransaction();
@@ -273,35 +255,20 @@ const verifyPayment = async (req, res) => {
         }
       } catch (error) {
         await session.abortTransaction();
-        console.error(
-          `[${new Date().toISOString()}] Attempt ${
-            attempt + 1
-          } failed for pidx: ${pidx}`,
-          error
-        );
 
         if (
           error.errorLabelSet?.has("TransientTransactionError") &&
           attempt < maxRetries - 1
         ) {
           attempt++;
-          console.log(
-            `[${new Date().toISOString()}] Retrying transaction for pidx: ${pidx}, attempt ${
-              attempt + 1
-            }`
-          );
           continue;
         }
-        throw error; 
+        throw error;
       } finally {
         session.endSession();
       }
     }
   } catch (error) {
-    console.error(
-      `[${new Date().toISOString()}] Verification failed for pidx: ${pidx}`,
-      error
-    );
     if (error.code === 11000) {
       const payment = await PaymentModel.findOne({ pidx });
       if (!payment) {
@@ -311,9 +278,6 @@ const verifyPayment = async (req, res) => {
         });
       }
       const existingOrder = await orderModel.findOne({ cart: payment.cart });
-      console.log(
-        `[${new Date().toISOString()}] Duplicate order prevented for pidx: ${pidx}`
-      );
       return res.json({
         success: true,
         message: "Payment verified successfully, order already exists",
@@ -342,7 +306,7 @@ const verifyPayment = async (req, res) => {
       error: error.message,
     });
   } finally {
-    processingPidx.delete(pidx); 
+    processingPidx.delete(pidx);
   }
 };
 

@@ -69,7 +69,6 @@ const Register = () => {
         });
       }
     } catch (err) {
-      console.error("Fetch error:", err.message);
       toast.error("Failed to connect to the server. Please try again.", {
         position: "top-right",
         autoClose: 5000,

@@ -44,7 +44,6 @@ const Login = () => {
       });
 
       const data = await response.json();
-      console.log("Login API response:", data);
 
       if (data.success) {
         toast.success("Login successful!", {
@@ -60,7 +59,6 @@ const Login = () => {
         });
       }
     } catch (err) {
-      console.error("Fetch error:", err.message);
       toast.error("Failed to connect to the server. Please try again.", {
         position: "top-right",
         autoClose: 5000,

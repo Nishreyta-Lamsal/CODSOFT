@@ -28,8 +28,8 @@ const cartSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["pending", "active", "purchased", "cancelled"],
-    default: "active",
+    enum: ["pending", "purchased", "cancelled"],
+    default: "pending",
   },
   isOrderCreated: {
     type: Boolean,

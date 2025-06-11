@@ -36,7 +36,6 @@ const HomePage = () => {
       } catch (err) {
         setError("Failed to fetch products. Please try again later.");
         setLoading(false);
-        console.error("Fetch error:", err);
       }
     };
     fetchProducts();
@@ -44,7 +43,6 @@ const HomePage = () => {
 
   const getCategoryImage = (category) => {
     if (!Array.isArray(products)) {
-      console.warn("Products is not an array:", products);
       return "https://via.placeholder.com/288x288";
     }
     const product = products.find((p) => p.category === category);

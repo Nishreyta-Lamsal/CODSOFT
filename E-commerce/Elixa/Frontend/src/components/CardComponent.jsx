@@ -40,7 +40,7 @@ const CardComponent = ({
             onClick={handleAddToCart}
             className="text-[#4B3832] hover:text-[#D4AF37] transition cursor-pointer"
           >
-            Add to Cart
+            View Details
           </button>
         </div>
       </div>

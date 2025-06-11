@@ -31,7 +31,6 @@ const viewOrders = async (req, res) => {
       orders,
     });
   } catch (error) {
-    console.error("Error viewing orders:", error);
     res.json({ success: false, message: "Server error" });
   }
 };

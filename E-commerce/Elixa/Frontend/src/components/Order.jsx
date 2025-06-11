@@ -36,7 +36,6 @@ const Order = () => {
 
       if (!response.ok) {
         const text = await response.text();
-        console.error("[DEBUG] Non-JSON response:", text);
         throw new Error(
           `Request failed with status ${response.status}: ${response.statusText}`
         );
@@ -45,7 +44,6 @@ const Order = () => {
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         const text = await response.text();
-        console.error("[DEBUG] Unexpected response format:", text);
         throw new Error("Received non-JSON response from server");
       }
 
@@ -60,7 +58,6 @@ const Order = () => {
       const errorMessage = err.message || "Failed to fetch purchased orders";
       setError(errorMessage);
       toast.error(errorMessage);
-      console.error("[DEBUG] Fetch orders error:", err);
     } finally {
       setLoading(false);
     }

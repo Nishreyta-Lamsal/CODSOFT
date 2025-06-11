@@ -33,7 +33,7 @@ const addToCart = async (req, res) => {
       });
     }
 
-    let cart = await cartModel.findOne({ user: userId, status: "active" });
+    let cart = await cartModel.findOne({ user: userId, status: "pending" });
     if (!cart) {
       cart = new cartModel({ user: userId, items: [], totalPrice: 0 });
     }
@@ -75,7 +75,6 @@ const addToCart = async (req, res) => {
       cart: populatedCart,
     });
   } catch (error) {
-    console.error("Error adding to cart:", error);
     res.json({ success: false, message: "Server error" });
   }
 };
@@ -93,7 +92,7 @@ const removeFromCart = async (req, res) => {
       return res.json({ success: false, message: "Product ID is required" });
     }
 
-    const cart = await cartModel.findOne({ user: userId, status: "active" });
+    const cart = await cartModel.findOne({ user: userId, status: "pending" });
     if (!cart) {
       return res.json({ success: false, message: "Cart not found" });
     }
@@ -141,7 +140,6 @@ const removeFromCart = async (req, res) => {
       cart: populatedCart,
     });
   } catch (error) {
-    console.error("Error removing from cart:", error);
     res.json({ success: false, message: "Server error" });
   }
 };
@@ -155,20 +153,19 @@ const viewCart = async (req, res) => {
     const userId = req.user._id;
 
     const cart = await cartModel
-      .findOne({ user: userId, status: "active" })
+      .findOne({ user: userId, status: "pending" })
       .populate("items.product");
 
     if (!cart) {
       return res.json({
         success: true,
-        message: "No active cart found",
+        message: "No pending cart found",
         cart: { items: [], totalPrice: 0 },
       });
     }
 
     res.json({ success: true, message: "Cart retrieved successfully", cart });
   } catch (error) {
-    console.error("Error viewing cart:", error);
     res.json({ success: false, message: "Server error" });
   }
 };
@@ -197,7 +194,7 @@ const updateCart = async (req, res) => {
       return res.json({ success: false, message: "Product not found" });
     }
 
-    const cart = await cartModel.findOne({ user: userId, status: "active" });
+    const cart = await cartModel.findOne({ user: userId, status: "pending" });
     if (!cart) {
       return res.json({ success: false, message: "Cart not found" });
     }
@@ -251,7 +248,6 @@ const updateCart = async (req, res) => {
       cart: populatedCart,
     });
   } catch (error) {
-    console.error("Error updating cart:", error);
     res.json({ success: false, message: "Server error" });
   }
 };

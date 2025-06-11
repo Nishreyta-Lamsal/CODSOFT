@@ -5,8 +5,8 @@ import { ToastContainer, toast } from "react-toastify";
 import Swal from "sweetalert2";
 
 const Cart = () => {
-  const { backendUrl } = useContext(AppContext);
-  const [cart, setCart] = useState(null);
+  const { backendUrl, setCart } = useContext(AppContext);
+  const [cart, setLocalCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -39,7 +39,6 @@ const Cart = () => {
 
       if (!response.ok) {
         const text = await response.text();
-        console.error("[DEBUG] Non-JSON response:", text);
         throw new Error(
           `Request failed with status ${response.status}: ${response.statusText}`
         );
@@ -48,13 +47,13 @@ const Cart = () => {
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
         const text = await response.text();
-        console.error("[DEBUG] Unexpected response format:", text);
         throw new Error("Received non-JSON response from server");
       }
 
       const data = await response.json();
       if (data.success) {
-        setCart(data.cart);
+        setLocalCart(data.cart);
+        setCart(data.cart); // Update AppContext cart state
       } else {
         setError(data.message || "Failed to fetch cart");
         toast.error(data.message || "Failed to fetch cart");
@@ -63,7 +62,6 @@ const Cart = () => {
       const errorMessage = err.message || "Failed to fetch cart";
       setError(errorMessage);
       toast.error(errorMessage);
-      console.error("[DEBUG] Fetch cart error:", err);
     } finally {
       setLoading(false);
     }
@@ -94,7 +92,8 @@ const Cart = () => {
       }
 
       if (data.success) {
-        setCart(data.cart);
+        setLocalCart(data.cart); // Update local state
+        setCart(data.cart); // Update AppContext state
         toast.success("Item quantity updated");
       } else {
         toast.error(data.message || "Failed to update cart");
@@ -104,7 +103,6 @@ const Cart = () => {
         ? "Insufficient stock for requested quantity"
         : err.message || "Failed to update cart";
       toast.error(errorMessage);
-      console.error("[DEBUG] Update cart error:", err);
     }
   };
 
@@ -147,7 +145,8 @@ const Cart = () => {
 
       const data = await response.json();
       if (data.success) {
-        setCart(data.cart);
+        setLocalCart(data.cart); // Update local state
+        setCart(data.cart); // Update AppContext state
         toast.success("Item removed from cart");
       } else {
         setError(data.message || "Failed to remove item");
@@ -157,7 +156,6 @@ const Cart = () => {
       const errorMessage = err.message || "Failed to remove item";
       setError(errorMessage);
       toast.error(errorMessage);
-      console.error("[DEBUG] Remove from cart error:", err);
     }
   };
 
@@ -171,7 +169,7 @@ const Cart = () => {
         setPaymentLoading(false);
         setTimeout(() => {
           navigate("/login");
-        }, 3000); 
+        }, 3000);
         return;
       }
 
@@ -202,7 +200,7 @@ const Cart = () => {
         return;
       }
 
-      // New: Check if address is empty or phone is default
+      // Check if address is empty or phone is default
       const { address, phone } = profileData.user;
       if ((!address.line1 && !address.line2) || phone === "0000000000") {
         toast.warning(
@@ -211,10 +209,10 @@ const Cart = () => {
         setPaymentLoading(false);
         setTimeout(() => {
           navigate("/profile");
-        }, 3000); 
+        }, 3000);
         return;
       }
-      
+
       if (!cart || !cart._id || !cart.totalPrice) {
         toast.error("Invalid cart or no items to checkout");
         setPaymentLoading(false);
@@ -256,13 +254,12 @@ const Cart = () => {
         throw new Error(data.message || "Payment initiation failed");
       }
     } catch (error) {
-      console.error("[DEBUG] Payment initiation error:", error);
       toast.error(error.message || "Payment initiation failed");
     } finally {
       setPaymentLoading(false);
     }
   };
-  
+
   const verifyPayment = async (pidx) => {
     try {
       setIsVerifying(true);
@@ -275,8 +272,6 @@ const Cart = () => {
         return;
       }
 
-      console.log("[DEBUG] Verifying payment for pidx:", pidx);
-
       const response = await fetch(`${backendUrl}/api/user/payment/verify`, {
         method: "POST",
         headers: {
@@ -287,27 +282,26 @@ const Cart = () => {
       });
 
       const data = await response.json();
-      console.log("[DEBUG] Payment verification response:", data);
 
       if (data.success) {
         if (data.cart?.status === "purchased") {
           toast.success("Payment successful! Order confirmed.");
-          setCart(null); // Clear cart only if status is "purchased"
+          setLocalCart(null);
+          setCart(null); // Clear AppContext cart state
           navigate("/order-confirmation");
         } else {
-          // Keep cart in UI and notify user
           toast.info(
             `Payment is still ${
               data.cart?.status || "pending"
             }. Your cart remains active.`
           );
-          setCart(data.cart || cart); // Update cart with latest data if available
+          setLocalCart(data.cart || cart);
+          setCart(data.cart || cart); // Update AppContext cart state
         }
       } else {
         toast.error(data.message || "Payment verification failed");
       }
     } catch (error) {
-      console.error("[DEBUG] Verification error:", error);
       toast.error(`Payment verification failed: ${error.message}`);
     } finally {
       setIsVerifying(false);
@@ -317,7 +311,6 @@ const Cart = () => {
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const pidx = queryParams.get("pidx");
-    console.log("[DEBUG] Redirect params:", { pidx });
     if (pidx && !isVerifying) {
       verifyPayment(pidx);
     }

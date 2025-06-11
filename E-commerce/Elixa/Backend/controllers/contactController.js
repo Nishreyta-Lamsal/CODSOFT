@@ -54,7 +54,6 @@ const createContact = async (req, res) => {
       const errors = Object.values(error.errors).map((err) => err.message);
       return res.json({ success: false, message: errors.join(", ") });
     }
-    console.error("Error creating contact:", error);
     res.json({ success: false, message: "Server error" });
   }
 };

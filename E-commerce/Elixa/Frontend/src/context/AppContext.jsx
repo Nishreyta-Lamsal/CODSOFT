@@ -39,10 +39,8 @@ export const AppProvider = ({ children }) => {
         setUser(data.user);
       } else {
         setUser(null);
-        console.error("Failed to fetch user data:", data.message);
       }
     } catch (err) {
-      console.error("Fetch user data error:", err);
       setUser(null);
     }
   };
@@ -64,7 +62,6 @@ export const AppProvider = ({ children }) => {
         setCart(null);
       }
     } catch (err) {
-      console.error("Fetch cart error:", err);
       setCart(null);
     }
   };
@@ -94,6 +91,7 @@ export const AppProvider = ({ children }) => {
         cart,
         fetchCart,
         fetchUserData,
+        setCart
       }}
     >
       {children}

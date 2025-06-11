@@ -94,8 +94,6 @@ const registerUser = async (req, res) => {
       },
     });
 
-    console.log("BACKEND_URL:", process.env.BACKEND_URL);
-
     const verificationLink = `${process.env.BACKEND_URL}/api/user/verify/${verificationToken}`;
 
     const mailOptions = {

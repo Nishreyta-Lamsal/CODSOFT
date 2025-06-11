@@ -17,7 +17,6 @@ const PaymentVerify = () => {
       const pidx = query.get("pidx");
 
       if (!pidx) {
-        console.error("No pidx found in URL");
         setError("Invalid payment details");
         setLoading(false);
         return;
@@ -50,24 +49,15 @@ const PaymentVerify = () => {
             data.message === "Payment verification is already in progress" &&
             attempt < maxRetries
           ) {
-            // If verification is in progress, retry after a delay
             attempt++;
-            console.log(
-              `Verification in progress, retrying (${attempt}/${maxRetries})...`
-            );
             setTimeout(attemptVerification, retryDelay);
           } else {
-            console.error("Payment verification failed:", data.message);
             setError(data.message || "Payment verification failed");
             setLoading(false);
           }
         } catch (error) {
-          console.error("Error verifying payment:", error);
           if (attempt < maxRetries) {
             attempt++;
-            console.log(
-              `Error occurred, retrying (${attempt}/${maxRetries})...`
-            );
             setTimeout(attemptVerification, retryDelay);
           } else {
             setError("Failed to verify payment. Please try again.");
