@@ -53,7 +53,7 @@ const Cart = () => {
       const data = await response.json();
       if (data.success) {
         setLocalCart(data.cart);
-        setCart(data.cart); // Update AppContext cart state
+        setCart(data.cart);
       } else {
         setError(data.message || "Failed to fetch cart");
         toast.error(data.message || "Failed to fetch cart");
@@ -92,8 +92,8 @@ const Cart = () => {
       }
 
       if (data.success) {
-        setLocalCart(data.cart); // Update local state
-        setCart(data.cart); // Update AppContext state
+        setLocalCart(data.cart); 
+        setCart(data.cart); 
         toast.success("Item quantity updated");
       } else {
         toast.error(data.message || "Failed to update cart");
@@ -145,8 +145,8 @@ const Cart = () => {
 
       const data = await response.json();
       if (data.success) {
-        setLocalCart(data.cart); // Update local state
-        setCart(data.cart); // Update AppContext state
+        setLocalCart(data.cart); 
+        setCart(data.cart); 
         toast.success("Item removed from cart");
       } else {
         setError(data.message || "Failed to remove item");
@@ -173,7 +173,6 @@ const Cart = () => {
         return;
       }
 
-      // Fetch user profile
       const profileRes = await fetch(`${backendUrl}/api/user/get-profile`, {
         method: "GET",
         headers: {

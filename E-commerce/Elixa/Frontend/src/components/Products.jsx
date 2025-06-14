@@ -5,11 +5,11 @@ import "react-toastify/dist/ReactToastify.css";
 import { Link, useLocation } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 import ProductCardComponent from "./ProductCardComponent"; 
+import { useMemo } from "react";
 
 const Products = () => {
   const { backendUrl } = useContext(AppContext);
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -43,7 +43,6 @@ const Products = () => {
           ? responseData.data
           : [];
         setProducts(productsArray);
-        setFilteredProducts(productsArray);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -55,7 +54,7 @@ const Products = () => {
     fetchProducts();
   }, [backendUrl]);
 
-  useEffect(() => {
+  const filteredProducts = useMemo(() => {
     let result = [...products];
 
     if (searchQuery) {
@@ -88,12 +87,13 @@ const Products = () => {
       case "newest":
         result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         break;
-      default: 
+      default:
         break;
     }
 
-    setFilteredProducts(result);
-  }, [searchQuery, selectedCategory, priceRange, sortOption, products]);
+    return result;
+  }, [products, searchQuery, selectedCategory, priceRange, sortOption]);
+  
 
   const handlePriceChange = (e, index) => {
     const newPriceRange = [...priceRange];
