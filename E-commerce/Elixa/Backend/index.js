@@ -15,12 +15,12 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(
-  cors({
-    origin: "*",
-  })
-);
+const corsOptions = {
+  origin: ["http://localhost:5173", "https://elixaa.netlify.app"],
+  credentials: true,
+};
 
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
