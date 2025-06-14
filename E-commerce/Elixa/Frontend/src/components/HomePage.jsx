@@ -19,6 +19,9 @@ const HomePage = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        if (!backendUrl) {
+          throw new Error("Backend URL not configured");
+        }
         const response = await fetch(`${backendUrl}/api/admin/get-products`);
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
@@ -34,7 +37,6 @@ const HomePage = () => {
         setProducts(productsArray);
         setLoading(false);
       } catch (err) {
-        setError("Failed to fetch products. Please try again later.");
         setLoading(false);
       }
     };
@@ -42,21 +44,14 @@ const HomePage = () => {
   }, [backendUrl]);
 
   const getCategoryImage = (category) => {
-    if (!Array.isArray(products)) {
+    if (!Array.isArray(products) || products.length === 0) {
       return "https://via.placeholder.com/288x288";
     }
     const product = products.find((p) => p.category === category);
     return product ? product.image : "https://via.placeholder.com/288x288";
   };
 
-  if (loading) {
-    return <div className="text-center py-12">Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="text-center py-12 text-red-500">{error}</div>;
-  }
-
+  // Render static content even if there's an error
   return (
     <div className="bg-gray-100">
       <div className="relative h-screen overflow-hidden">
@@ -67,7 +62,6 @@ const HomePage = () => {
           src={landingpage}
           alt="Elixar fashion collection"
         />
-
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center px-4 text-center text-white">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -96,7 +90,7 @@ const HomePage = () => {
             >
               <Link
                 to="/product"
-                className="px-6 py-3 border border-[#4B3832] rounded bg-[#4B3832] hover:bg-[#342622]  text-white text-center transition duration-300 transform hover:scale-105"
+                className="px-6 py-3 border border-[#4B3832] rounded bg-[#4B3832] hover:bg-[#342622] text-white text-center transition duration-300 transform hover:scale-105"
               >
                 Discover Collections
               </Link>
@@ -113,69 +107,77 @@ const HomePage = () => {
         </div>
       </div>
 
-      <div className="max-w-8xl bg-white py-6 pt-16">
-        <h2 className="text-3xl font-bold font-serif text-[#4B3832] mb-2 text-center relative">
-          Shop By Category
-        </h2>
-        <div className="w-24 h-1 bg-[#D4AF37] mx-auto mb-10"></div>
-        <div className="flex flex-wrap justify-center gap-10">
-          {categories.map((category) => (
-            <Link
-              key={category}
-              to={`/product?category=${category}`}
-              className="w-full sm:w-72 h-72 relative flex items-center"
-            >
-              <img
-                src={getCategoryImage(category)}
-                alt={`${category} category`}
-                className="w-full h-full object-contain rounded-lg shadow-md"
-              />
-              <div className="absolute inset-0 bg-black/60 bg-opacity-30 rounded-lg"></div>
-              <p className="absolute text-3xl font-extrabold top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white z-10">
-                {category}
-              </p>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      <div className="py-12 sm:px-6 lg:px-[4.6rem] bg-white">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="max-w-8xl mx-12"
-        >
+      {loading ? (
+        <div className="text-center py-12">Loading...</div>
+      ) : (
+        <div className="max-w-8xl bg-white py-6 pt-16">
           <h2 className="text-3xl font-bold font-serif text-[#4B3832] mb-2 text-center relative">
-            Featured Products
+            Shop By Category
           </h2>
           <div className="w-24 h-1 bg-[#D4AF37] mx-auto mb-10"></div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
-            {Array.isArray(products) && products.length > 0 ? (
-              products.slice(0, 8).map((product) => (
-                <Link
-                  key={product.id || product._id} // Use _id if id is not available
-                  to={`/productdetails/${product.id || product._id}`}
-                  className="block"
-                >
-                  <CardComponent
-                    image={product.image}
-                    name={product.name}
-                    category={product.category}
-                    price={product.price}
-                    className="cursor-pointer" // Add pointer cursor
-                  />
-                </Link>
-              ))
-            ) : (
-              <p className="text-center col-span-full">
-                No products available.
-              </p>
-            )}
+          <div className="flex flex-wrap justify-center gap-10">
+            {categories.map((category) => (
+              <Link
+                key={category}
+                to={`/product?category=${category}`}
+                className="w-full sm:w-72 h-72 relative flex items-center"
+              >
+                <img
+                  src={getCategoryImage(category)}
+                  alt={`${category} category`}
+                  className="w-full h-full object-contain rounded-lg shadow-md"
+                />
+                <div className="absolute inset-0 bg-black/60 bg-opacity-30 rounded-lg"></div>
+                <p className="absolute text-3xl font-extrabold top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white z-10">
+                  {category}
+                </p>
+              </Link>
+            ))}
           </div>
-        </motion.div>
-      </div>
+        </div>
+      )}
 
+      {loading ? (
+        <div className="text-center py-12">Loading...</div>
+      ) : (
+        <div className="py-12 sm:px-6 lg:px-[4.6rem] bg-white">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="max-w-8xl mx-12"
+          >
+            <h2 className="text-3xl font-bold font-serif text-[#4B3832] mb-2 text-center relative">
+              Featured Products
+            </h2>
+            <div className="w-24 h-1 bg-[#D4AF37] mx-auto mb-10"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10">
+              {Array.isArray(products) && products.length > 0 ? (
+                products.slice(0, 8).map((product) => (
+                  <Link
+                    key={product.id || product._id}
+                    to={`/productdetails/${product.id || product._id}`}
+                    className="block"
+                  >
+                    <CardComponent
+                      image={product.image}
+                      name={product.name}
+                      category={product.category}
+                      price={product.price}
+                      className="cursor-pointer"
+                    />
+                  </Link>
+                ))
+              ) : (
+                <p className="text-center col-span-full">
+                  No products available at the moment.
+                </p>
+              )}
+            </div>
+            {error && <p className="text-center text-red-500 mt-4">{error}</p>}
+          </motion.div>
+        </div>
+      )}
       <div className="relative py-10 bg-[#4B3832] text-white">
         <div className="absolute inset-0 bg-black/30 z-10"></div>
         <img

@@ -23,10 +23,14 @@ const Cart = () => {
       setLoading(true);
       const token = localStorage.getItem("token");
       if (!token) {
-        setError("No authentication token found. Please log in.");
+        setError("Please log in to view your cart.");
         toast.error("Please log in to view your cart");
         setLoading(false);
         return;
+      }
+
+      if (!backendUrl) {
+        throw new Error("Backend URL not configured");
       }
 
       const response = await fetch(`${backendUrl}/api/user/cart-view`, {
@@ -56,12 +60,10 @@ const Cart = () => {
         setCart(data.cart);
       } else {
         setError(data.message || "Failed to fetch cart");
-        toast.error(data.message || "Failed to fetch cart");
       }
     } catch (err) {
       const errorMessage = err.message || "Failed to fetch cart";
       setError(errorMessage);
-      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -92,8 +94,8 @@ const Cart = () => {
       }
 
       if (data.success) {
-        setLocalCart(data.cart); 
-        setCart(data.cart); 
+        setLocalCart(data.cart);
+        setCart(data.cart);
         toast.success("Item quantity updated");
       } else {
         toast.error(data.message || "Failed to update cart");
@@ -145,8 +147,8 @@ const Cart = () => {
 
       const data = await response.json();
       if (data.success) {
-        setLocalCart(data.cart); 
-        setCart(data.cart); 
+        setLocalCart(data.cart);
+        setCart(data.cart);
         toast.success("Item removed from cart");
       } else {
         setError(data.message || "Failed to remove item");
@@ -314,30 +316,6 @@ const Cart = () => {
     }
   }, [location.search]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8F5F2]">
-        <div className="text-2xl font-serif text-[#4B3832]">
-          Loading your cart...
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8F5F2]">
-        <div className="text-2xl font-serif text-red-600 mb-4">{error}</div>
-        <Link
-          to="/login"
-          className="px-4 py-2 bg-[#D4AF37] text-white rounded hover:bg-[#4B3832] transition"
-        >
-          Go to Login
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div className="bg-[#F8F5F2] min-h-screen">
       <div className="relative h-16 overflow-hidden bg-[#745d46]"></div>
@@ -384,159 +362,185 @@ const Cart = () => {
             Your Shopping Cart
           </h1>
 
-          {cart && cart.items.length > 0 ? (
-            <div className="space-y-6">
-              {cart.items.map((item) => (
-                <div
-                  key={item.product._id}
-                  className="flex flex-col md:flex-row items-center bg-white p-6 rounded-lg shadow-sm border border-[#e8e1d9]"
-                >
-                  <div className="w-full md:w-1/4 mb-4 md:mb-0">
-                    <img
-                      src={
-                        `http://localhost:5000${item.product.image}` ||
-                        "/placeholder-image.jpg"
-                      }
-                      alt={item.product.name}
-                      className="w-full h-48 object-contain rounded-lg"
-                    />
-                  </div>
-                  <div className="w-full md:w-2/4 px-0 md:px-6">
-                    <h2 className="text-xl font-serif font-semibold text-[#4B3832]">
-                      {item.product.name}
-                    </h2>
-                    <p className="text-[#D4AF37] font-bold text-lg mt-2">
-                      ${item.product.price.toFixed(2)}
-                    </p>
-                    <p className="text-gray-600 mt-2">
-                      {item.product.description.substring(0, 100)}...
-                    </p>
-                  </div>
-                  <div className="w-full md:w-1/4 flex flex-col items-end mt-4 md:mt-0">
-                    <div className="flex items-center mb-4">
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.product._id, item.quantity - 1)
-                        }
-                        disabled={item.quantity <= 1}
-                        className="px-3 py-1 bg-gray-200 rounded-l hover:bg-gray-300 disabled:opacity-50"
-                      >
-                        -
-                      </button>
-                      <span className="px-4 py-1 bg-gray-100">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.product._id, item.quantity + 1)
-                        }
-                        className="px-3 py-1 bg-gray-200 rounded-r hover:bg-gray-300"
-                      >
-                        +
-                      </button>
-                    </div>
-                    <p className="text-lg font-serif font-semibold text-[#4B3832] mb-4">
-                      ${(item.product.price * item.quantity).toFixed(2)}
-                    </p>
-                    <button
-                      onClick={() => removeFromCart(item.product._id)}
-                      className="text-red-500 hover:text-red-700 text-sm font-medium"
-                    >
-                      Remove Item
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-[#e8e1d9] mt-8">
-                <h3 className="text-xl font-serif font-semibold text-[#4B3832] mb-6">
-                  Order Summary
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex justify-between text-gray-600">
-                    <span>
-                      {cart.items.length}{" "}
-                      {cart.items.length === 1 ? "item" : "items"} (
-                      {cart.items.reduce(
-                        (total, item) => total + item.quantity,
-                        0
-                      )}{" "}
-                      quantity total)
-                    </span>
-                    <span>${cart.totalPrice.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-gray-600">
-                    <span>Estimated Shipping</span>
-                    <span className="text-[#D4AF37]">Free</span>
-                  </div>
-                  <div className="flex justify-between text-gray-600">
-                    <span>Estimated Taxes</span>
-                    <span>$0.00</span>
-                  </div>
-                  <div className="border-t border-[#e8e1d9] pt-4 flex justify-between items-center">
-                    <span className="text-lg font-serif font-semibold text-[#4B3832]">
-                      Total
-                    </span>
-                    <span className="text-xl font-serif font-bold text-[#D4AF37]">
-                      ${cart.totalPrice.toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-                <div className="mt-6 flex flex-col sm:flex-row gap-4">
-                  <Link
-                    to="/product"
-                    className="px-6 py-3 border border-[#4B3832] text-[#4B3832] rounded hover:bg-[#4B3832] hover:text-white transition text-center"
-                  >
-                    Continue Shopping
-                  </Link>
-                  <button
-                    onClick={handleCheckout}
-                    disabled={paymentLoading}
-                    className="px-6 py-3 bg-[#D4AF37] text-white rounded hover:bg-[#4B3832] transition text-center disabled:opacity-50 flex items-center justify-center"
-                  >
-                    {paymentLoading ? (
-                      <>
-                        <svg
-                          className="animate-spin h-5 w-5 mr-2 text-white"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          />
-                        </svg>
-                        Processing...
-                      </>
-                    ) : (
-                      "Proceed to Checkout"
-                    )}
-                  </button>
-                </div>
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="text-2xl font-serif text-[#4B3832]">
+                Loading your cart...
               </div>
             </div>
           ) : (
-            <div className="text-center bg-white p-12 rounded-lg shadow-sm border border-[#e8e1d9]">
-              <h2 className="text-2xl font-serif text-[#4B3832] mb-4">
-                Your cart is empty
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Looks like you haven't added anything to your cart yet
-              </p>
-              <Link
-                to="/product"
-                className="px-6 py-3 bg-[#D4AF37] text-white rounded hover:bg-[#4B3832] transition inline-block"
-              >
-                Browse Products
-              </Link>
+            <div className="space-y-6">
+              {cart && cart.items.length > 0 ? (
+                <>
+                  {cart.items.map((item) => (
+                    <div
+                      key={item.product._id}
+                      className="flex flex-col md:flex-row items-center bg-white p-6 rounded-lg shadow-sm border border-[#e8e1d9]"
+                    >
+                      <div className="w-full md:w-1/4 mb-4 md:mb-0">
+                        <img
+                          src={
+                            `http://localhost:5000${item.product.image}` ||
+                            "/placeholder-image.jpg"
+                          }
+                          alt={item.product.name}
+                          className="w-full h-48 object-contain rounded-lg"
+                        />
+                      </div>
+                      <div className="w-full md:w-2/4 px-0 md:px-6">
+                        <h2 className="text-xl font-serif font-semibold text-[#4B3832]">
+                          {item.product.name}
+                        </h2>
+                        <p className="text-[#D4AF37] font-bold text-lg mt-2">
+                          ${item.product.price.toFixed(2)}
+                        </p>
+                        <p className="text-gray-600 mt-2">
+                          {item.product.description.substring(0, 100)}...
+                        </p>
+                      </div>
+                      <div className="w-full md:w-1/4 flex flex-col items-end mt-4 md:mt-0">
+                        <div className="flex items-center mb-4">
+                          <button
+                            onClick={() =>
+                              updateQuantity(
+                                item.product._id,
+                                item.quantity - 1
+                              )
+                            }
+                            disabled={item.quantity <= 1}
+                            className="px-3 py-1 bg-gray-200 rounded-l hover:bg-gray-300 disabled:opacity-50"
+                          >
+                            -
+                          </button>
+                          <span className="px-4 py-1 bg-gray-100">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() =>
+                              updateQuantity(
+                                item.product._id,
+                                item.quantity + 1
+                              )
+                            }
+                            className="px-3 py-1 bg-gray-200 rounded-r hover:bg-gray-300"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <p className="text-lg font-serif font-semibold text-[#4B3832] mb-4">
+                          ${(item.product.price * item.quantity).toFixed(2)}
+                        </p>
+                        <button
+                          onClick={() => removeFromCart(item.product._id)}
+                          className="text-red-500 hover:text-red-700 text-sm font-medium"
+                        >
+                          Remove Item
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  <div className="bg-white p-6 rounded-lg shadow-sm border border-[#e8e1d9] mt-8">
+                    <h3 className="text-xl font-serif font-semibold text-[#4B3832] mb-6">
+                      Order Summary
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex justify-between text-gray-600">
+                        <span>
+                          {cart.items.length}{" "}
+                          {cart.items.length === 1 ? "item" : "items"} (
+                          {cart.items.reduce(
+                            (total, item) => total + item.quantity,
+                            0
+                          )}{" "}
+                          quantity total)
+                        </span>
+                        <span>${cart.totalPrice.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-gray-600">
+                        <span>Estimated Shipping</span>
+                        <span className="text-[#D4AF37]">Free</span>
+                      </div>
+                      <div className="flex justify-between text-gray-600">
+                        <span>Estimated Taxes</span>
+                        <span>$0.00</span>
+                      </div>
+                      <div className="border-t border-[#e8e1d9] pt-4 flex justify-between items-center">
+                        <span className="text-lg font-serif font-semibold text-[#4B3832]">
+                          Total
+                        </span>
+                        <span className="text-xl font-serif font-bold text-[#D4AF37]">
+                          ${cart.totalPrice.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-6 flex flex-col sm:flex-row gap-4">
+                      <Link
+                        to="/product"
+                        className="px-6 py-3 border border-[#4B3832] text-[#4B3832] rounded hover:bg-[#4B3832] hover:text-white transition text-center"
+                      >
+                        Continue Shopping
+                      </Link>
+                      <button
+                        onClick={handleCheckout}
+                        disabled={paymentLoading}
+                        className="px-6 py-3 bg-[#D4AF37] text-white rounded hover:bg-[#4B3832] transition text-center disabled:opacity-50 flex items-center justify-center"
+                      >
+                        {paymentLoading ? (
+                          <>
+                            <svg
+                              className="animate-spin h-5 w-5 mr-2 text-white"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Processing...
+                          </>
+                        ) : (
+                          "Proceed to Checkout"
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center bg-white p-12 rounded-lg shadow-sm border border-[#e8e1d9]">
+                  <h2 className="text-2xl font-serif text-[#4B3832] mb-4">
+                    Your cart is empty
+                  </h2>
+                  <p className="text-gray-600 mb-6">
+                    {error
+                      ? error
+                      : "Looks like you haven't added anything to your cart yet"}
+                  </p>
+                  <Link
+                    to="/product"
+                    className="px-6 py-3 bg-[#D4AF37] text-white rounded hover:bg-[#4B3832] transition inline-block"
+                  >
+                    Browse Products
+                  </Link>
+                  {error && (
+                    <Link
+                      to="/login"
+                      className="ml-4 px-6 py-3 border border-[#4B3832] text-[#4B3832] rounded hover:bg-[#4B3832] hover:text-white transition inline-block"
+                    >
+                      Go to Login
+                    </Link>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
