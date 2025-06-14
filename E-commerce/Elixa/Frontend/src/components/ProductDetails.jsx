@@ -257,7 +257,7 @@ const ProductDetails = () => {
             <div className="space-y-4">
               <div className="relative overflow-hidden h-96 bg-gray-100 rounded-lg">
                 <img
-                  src={`http://localhost:5000${
+                  src={`${backendUrl}${
                     product.images?.[selectedImage] || product.image
                   }`}
                   alt={product.name}
@@ -279,7 +279,7 @@ const ProductDetails = () => {
                       }`}
                     >
                       <img
-                        src={`http://localhost:5000${img}`}
+                        src={`${backendUrl}${img}`}
                         alt={`${product.name} thumbnail ${index + 1}`}
                         className="w-full h-full object-cover"
                       />

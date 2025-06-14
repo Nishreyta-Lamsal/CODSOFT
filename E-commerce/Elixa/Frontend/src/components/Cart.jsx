@@ -380,7 +380,7 @@ const Cart = () => {
                       <div className="w-full md:w-1/4 mb-4 md:mb-0">
                         <img
                           src={
-                            `http://localhost:5000${item.product.image}` ||
+                            `${backendUrl}${item.product.image}` ||
                             "/placeholder-image.jpg"
                           }
                           alt={item.product.name}
