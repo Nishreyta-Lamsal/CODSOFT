@@ -8,7 +8,7 @@ export const AppProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!token);
   const [cart, setCart] = useState(null);
   const backendUrl =
-    import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+    import.meta.env.VITE_BACKEND_URL || "https://zestful-grace.up.railway.app";
 
   useEffect(() => {
     if (token) {
