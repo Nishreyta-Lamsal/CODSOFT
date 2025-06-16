@@ -8,8 +8,7 @@ export const AppProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(!!token);
   const [cart, setCart] = useState(null);
   const backendUrl =
-    import.meta.env.VITE_BACKEND_URL ||
-    "https://independent-adaptation.up.railway.app";
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
   useEffect(() => {
     if (token) {
